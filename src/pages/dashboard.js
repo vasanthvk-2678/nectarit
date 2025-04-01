@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect } from "react";
-import { Card } from "./card";
+import { Card } from "../components/card";
 import { PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis } from 'recharts';
 
 import { FaBars, FaUserCircle, FaMoon } from 'react-icons/fa';
