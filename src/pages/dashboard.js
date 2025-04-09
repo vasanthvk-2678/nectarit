@@ -618,9 +618,12 @@ const colors = [
 const Dashboard = () => {
     const [itemCounts, setItemCounts] = useState({});
     const [orderStats, setOrderedStats] = useState([])
+    const [total_income, setTotalIncome] = useState(0);
+    const [order, setOrder] = useState({})
 
     const stats = [
         { label: "Total Orders", value: OrderedSet.length },
+        { label: "Total prize", value: Math.floor(total_income) },
         { label: "Orders Pending", value: OrderedSet.filter((item) => item.Order_Status === "Pending").length },
         { label: "In Transit", value: OrderedSet.filter((item) => item.Order_Status === "In Transit").length },
     ];
@@ -628,6 +631,7 @@ const Dashboard = () => {
     const additionalStats = [
         { label: "Online", value: OrderedSet.filter((item) => item.Order_Type === "Online").length },
         { label: "Dine-in", value: OrderedSet.filter((item) => item.Order_Type === "Dine In").length },
+        { label: "Online Percentage", value: (OrderedSet.filter((item) => item.Order_Type === "Online").length/OrderedSet.length)*100 },
     ];
 
     const pieData = Object.entries(itemCounts).map(([name, value]) => ({ name, value }));
@@ -659,6 +663,34 @@ const Dashboard = () => {
         setItemCounts(counts);
         setOrderedStats(orderStats)
     }, []);
+
+    useEffect(()=>{
+        let total_prize = []
+        OrderedSet.map((item, index)=>{
+            item.Items.map((item1)=>{
+                total_prize.push(item1.Total_Price)
+            })
+        })
+        let toal_income = total_prize.reduce((cur, val) => cur+val, 0)
+        setTotalIncome(toal_income)        
+    }, [])
+
+    useEffect(()=>{
+        let orderStatsDelivery = {}
+        let orderDeliveryData = []
+        OrderedSet.map((item,index)=>{
+            orderStatsDelivery[item.Delivery_Person ? item.Delivery_Person : "Dev" ] = (orderStatsDelivery[item.Delivery_Person ? item.Delivery_Person : "Dev" ] || 0 ) + 1
+        })
+        
+        for ( let key in orderStatsDelivery) {
+            orderDeliveryData.push({
+                Name: key,
+                Count: orderStatsDelivery[key]
+            })         
+        }
+        
+        setOrder(orderDeliveryData)
+    },[])
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
@@ -760,6 +792,20 @@ const Dashboard = () => {
                                     <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-medium transition-colors">
                                         x Reject
                                     </button>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </Card>
+            </div>
+            <div>
+            <Card className="p-4 shadow-md bg-yellow-100 rounded-lg w-1/2">
+                    <h3 className="font-semibold mb-2 text-gray-700">Deliver Agents Stats</h3>
+                    {order.map((item, index) => {                        
+                        return (
+                            <div key={index} className="flex justify-between items-center bg-gray-200 p-2 rounded-lg shadow-sm mb-6">
+                                <div>
+                                    <p>{item.Name} : <span className="text-blue-800">{item.Count}</span></p>
                                 </div>
                             </div>
                         )
